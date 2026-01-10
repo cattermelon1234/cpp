@@ -25,7 +25,7 @@ public:
 
   void pop(T& out) {
     std::lock_guard lock(m_);
-    if (data.empty()) throw 
+    if (data.empty()) throw empty_stack(); 
     out = data.top();
     data.pop();
   }
@@ -42,7 +42,16 @@ public:
     std::lock_guard lock(m_);
     return data.empty();
   }
+
+  friend void swap(ThreadSafeStack& a, ThreadSafeStack& b) {
+    std::lock(a.m_, b.m_);
+    std::lock_guard lock_a(a.m_, std::adopt_lock);
+    std::lock_guard lock_b(b.m_, std::adopt_lock);
+    swap(a.data, b.data);
+  }
 private:
   std::stack<T> data;
   mutable std::mutex m_;
 };
+
+
